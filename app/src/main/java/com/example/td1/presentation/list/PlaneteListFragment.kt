@@ -1,15 +1,21 @@
 package com.example.td1.presentation.list
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.td1.R
+import com.example.td1.presentation.api.PlanetApi
+import com.example.td1.presentation.api.PlanetResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
 
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
@@ -38,6 +44,32 @@ class PlaneteListFragment : Fragment() {
         }
         //recyclerView.layoutManager = layoutManager
         //recyclerView.adapter = adapter
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://pokeapi.co/api/v2/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val planetApi = retrofit.create(PlanetApi ::class.java)
+
+        planetApi.getPlaneteList().enqueue(object : Callback<PlanetResponse> {
+            override fun onFailure(call: Call<PlanetResponse>, t: Throwable) {
+                TODO("Not yet implemented")
+            }
+
+            override fun onResponse(
+                call: Call<PlanetResponse>,
+                response: Response<PlanetResponse>
+            ) {
+                if(response.isSuccessful && response.body() != null){
+                    val planetResponse = response.body()
+                    if (planetResponse != null) {
+                        adapter.updateList(planetResponse.results)
+                    }
+                }
+            }
+
+        })
 
         val planetList = arrayListOf<Planete>().apply{
             add(Planete("Terre"))
